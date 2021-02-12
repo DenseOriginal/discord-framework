@@ -1,0 +1,1 @@
+# Typescript framework for creating Discord bots
