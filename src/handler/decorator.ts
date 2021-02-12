@@ -15,10 +15,7 @@ export interface HandlerOptions {
 
 export function Handler(options: HandlerOptions) {
     return function <T extends constructor<any>>(target: T): T {
-        const injectableDecorator = injectable();
-        injectableDecorator(target);
-
-        return class extends target implements HandlerClass {
+        class newTarget extends target implements HandlerClass {
             name = options.name;
             nameRegExp = options.nameRegExp;
             commands: CommandClass[] = options.commands?.map(instantiateCommand) || [];
@@ -84,6 +81,11 @@ export function Handler(options: HandlerOptions) {
                 return { status: 'succes' };
             }
         }
+
+        // Activate dependency injection
+        const injectableDecorator = injectable();
+        injectableDecorator(newTarget);
+        return newTarget;
     }
 }
 

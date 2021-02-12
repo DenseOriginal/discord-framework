@@ -3,7 +3,7 @@ import { injectable } from "tsyringe";
 import { constructor } from "tsyringe/dist/typings/types";
 import { Argument, ArgumentValidator, createArgumentErrorEmbed, isParsingError, parseAny } from "./arguments";
 import { AuthFunction, AuthReturn } from "./authentication";
-import { ActionContext, CommandClass } from "./interfaces";
+import { ActionContext, ActionFunction, CommandClass } from "./interfaces";
 
 export interface CommandOptions {
     name: string;
@@ -15,10 +15,6 @@ export interface CommandOptions {
 
 export function Command(options: CommandOptions) {
     return function <T extends constructor<any>>(target: T): T {
-        // Activate dependency injection
-        const injectableDecorator = injectable();
-        injectableDecorator(target);
-
         // Target should have a action method
         if (!isFunction(target.prototype.action)) throw new Error(`${target.name} does not have an action method`);
 
@@ -26,14 +22,14 @@ export function Command(options: CommandOptions) {
         // Function throws error if anything is wrong
         validateArguments(options.arguments, target.name);
 
-        return class extends target implements CommandClass {
+        class newTarget extends target implements CommandClass {
             name = camelCase(options.name);
             nameRegExp = options.nameRegExp;
             description = options.description ?? '';
 
             async action(context: ActionContext) {
                 const message = context?.message;
-                const actionFunction = target.prototype.action;
+                const actionFunction: ActionFunction = target.prototype.action;
 
                 // Parse input arguments
                 const rawArguments = splitMessageContent(context?.args?.rawArg);
@@ -46,7 +42,7 @@ export function Command(options: CommandOptions) {
                     if (argument.rest) {
                         const inputArguments = rawArguments.slice(idx);
                         // If no rest arguments are sent, push undefined to error out
-                        if(inputArguments.length == 0) inputArguments.push(undefined as any);
+                        if (inputArguments.length == 0) inputArguments.push(undefined as any);
                         parsedArguments[camelCase(argument.key)] = [];
 
                         for (const inputArgument of inputArguments) {
@@ -56,7 +52,7 @@ export function Command(options: CommandOptions) {
 
                             parsedArguments[camelCase(argument.key)].push(parsedArgument);
                         }
-                
+
                         continue;
                     }
 
@@ -69,7 +65,7 @@ export function Command(options: CommandOptions) {
                 }
 
                 if (errorHappened) return;
-                
+
 
                 try {
                     const actionContext: ActionContext = {
@@ -77,7 +73,7 @@ export function Command(options: CommandOptions) {
                         args: parsedArguments
                     };
 
-                    const actionReturn = await actionFunction(actionContext);
+                    const actionReturn = await actionFunction.apply(this, [actionContext]);
                     if (actionReturn) message.channel.send(actionReturn);
                 } catch (error) {
                     console.log(error);
@@ -103,7 +99,12 @@ export function Command(options: CommandOptions) {
                 if (errors.length > 0) return { status: 'error', message: errors.join('\n') };
                 return { status: 'succes' };
             }
-        };
+        }
+
+        // Activate dependency injection
+        const injectableDecorator = injectable();
+        injectableDecorator(newTarget);
+        return newTarget;
     }
 }
 
