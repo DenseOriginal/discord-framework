@@ -22,7 +22,7 @@ export function bootstrap(mainHandler: constructor<any>, options: BootstrapOptio
   options?.listners?.forEach((constructor: constructor<ListenerClass>) => {
     const listener = container.resolve(constructor);
     client.on(listener.event, listener.listener);
-  })
+  });
 
   client.login(options.token);
 
