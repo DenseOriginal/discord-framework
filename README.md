@@ -2,7 +2,7 @@
 
 ## Example
 
-```javascript
+```typescript
 import { bootstrap, Command, Handler, hasRoles } from "discord-framework";
 
 // Ping command
