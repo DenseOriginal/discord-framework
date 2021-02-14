@@ -179,7 +179,8 @@ async function parseAndValidateArgument(argument: Argument, input: string, messa
   }
 
   // Validate argument if theres any validators
-  if (validator) {
+  // And the wasn't any errors with parsend
+  if (validator && !errorHappened) {
     const validators: ArgumentValidator[] = [];
     if (Array.isArray(validator)) {
       validators.push(...validator);
