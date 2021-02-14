@@ -1,4 +1,4 @@
-import { Status } from '@src/core/interfaces';
+import { Status } from '../core/interfaces';
 import { Message, PermissionResolvable } from 'discord.js';
 import { PromiseOrNot } from './interfaces';
 

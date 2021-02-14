@@ -1,5 +1,5 @@
-import { HandlerClass } from '@src/handler';
-import { ListenerClass } from '@src/listener';
+import { HandlerClass } from '../handler';
+import { ListenerClass } from '../listener';
 import { Client, Message } from 'discord.js';
 import { container } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';

@@ -1,4 +1,4 @@
-import { AuthFunction, CommandClass } from '@src/command';
+import { AuthFunction, CommandClass } from '../command';
 import { Message } from 'discord.js';
 
 /**

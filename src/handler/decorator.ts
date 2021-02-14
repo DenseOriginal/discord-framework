@@ -1,5 +1,5 @@
-import { ActionContext, AuthFunction, AuthReturn, CommandClass } from '@src/command';
-import { Status } from '@src/core/interfaces';
+import { ActionContext, AuthFunction, AuthReturn, CommandClass } from '../command';
+import { Status } from '../core/interfaces';
 import { Message, MessageEmbed } from 'discord.js';
 import { container, injectable } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
