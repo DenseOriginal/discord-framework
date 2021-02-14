@@ -17,8 +17,8 @@ export interface HandlerOptions {
 export function Handler(options: HandlerOptions) {
   return function <T extends constructor<any>>(target: T): T {
     class newTarget extends target implements HandlerClass {
-      name = options.name;
-      alias = options.alias;
+      name = camelCase(options.name);
+      alias = options.alias?.map(camelCase);
       nameRegExp = options.nameRegExp;
       commands: CommandClass[] = options.commands?.map(instantiateCommand) || [];
       handlers: HandlerClass[] = options.handlers?.map(instantiateHandler) || [];
@@ -132,4 +132,12 @@ function createErrorEmbed(message: Message, error: Status.Error): MessageEmbed {
   return new MessageEmbed()
     .setColor('#ff4d4d')
     .addField('Whoops something happened', '```' + message.content + '``` \n' + error.message);
+}
+
+function camelCase(str: string) {
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, '');
 }
