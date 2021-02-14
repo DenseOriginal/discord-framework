@@ -7,6 +7,7 @@ import { Message } from 'discord.js';
  */
 export interface HandlerClass {
   name: string;
+  alias?: string[];
   nameRegExp?: RegExp;
   commands: CommandClass[];
   run: RunFunction;

@@ -7,6 +7,7 @@ import { AuthFunction } from './authentication';
  */
 export interface CommandClass extends CanRun, Action {
   name: string;
+  alias?: string[];
   nameRegExp?: RegExp;
   description: string;
 }

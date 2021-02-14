@@ -7,6 +7,7 @@ import { ActionContext, ActionFunction, CommandClass } from './interfaces';
 
 export interface CommandOptions {
   name: string;
+  alias?: string[];
   nameRegExp?: RegExp;
   description?: string;
   arguments?: Argument[];
@@ -24,6 +25,7 @@ export function Command(options: CommandOptions) {
 
     class newTarget extends target implements CommandClass {
       name = camelCase(options.name);
+      alias = options.alias?.map(camelCase);
       nameRegExp = options.nameRegExp;
       description = options.description ?? '';
 

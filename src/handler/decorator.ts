@@ -7,6 +7,7 @@ import { HandlerClass } from './interfaces';
 
 export interface HandlerOptions {
   name: string;
+  alias?: string[];
   nameRegExp?: RegExp;
   commands?: constructor<any>[];
   handlers?: constructor<any>[];
@@ -17,6 +18,7 @@ export function Handler(options: HandlerOptions) {
   return function <T extends constructor<any>>(target: T): T {
     class newTarget extends target implements HandlerClass {
       name = options.name;
+      alias = options.alias;
       nameRegExp = options.nameRegExp;
       commands: CommandClass[] = options.commands?.map(instantiateCommand) || [];
       handlers: HandlerClass[] = options.handlers?.map(instantiateHandler) || [];
@@ -37,9 +39,12 @@ export function Handler(options: HandlerOptions) {
 
         // Find command- or handler instance that match the name
         // Command takes superiority over handler
+        // And name propery take superiority over alias
         const command =
           this.commands.find((command) => nameMatches(command.nameRegExp || command.name, commandName)) ||
-          this.handlers.find((handler) => nameMatches(handler.nameRegExp || handler.name, commandName));
+          this.commands.find((command) => command.alias?.includes(commandName)) ||
+          this.handlers.find((handler) => nameMatches(handler.nameRegExp || handler.name, commandName)) ||
+          this.handlers.find((handler) => handler.alias?.includes(commandName));
         if (!command) {
           message.channel.send('I cannot find that command');
           return;
