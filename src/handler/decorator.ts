@@ -46,7 +46,7 @@ export function Handler(options: HandlerOptions) {
           this.handlers.find((handler) => nameMatches(handler.nameRegExp || handler.name, commandName)) ||
           this.handlers.find((handler) => handler.alias?.includes(commandName));
         if (!command) {
-          message.channel.send('I cannot find that command');
+          message.channel.send(createErrorEmbed(message, { status: 'error', message: 'I cannot find that command' }));
           return;
         }
 
