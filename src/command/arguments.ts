@@ -23,8 +23,12 @@ export const ArgumentParsers = {
   role: roleParser,
 };
 
+export interface ValidatorContext {
+  val: any;
+  message: Message
+}
 export type ArgumentValidatorReturn = Status.Error | Status.Succes;
-export type ArgumentValidator = (val: any) => PromiseOrNot<ArgumentValidatorReturn>;
+export type ArgumentValidator = (context: ValidatorContext) => PromiseOrNot<ArgumentValidatorReturn>;
 
 export function parseAny(type: ArgumentTypes, val: string, message: Message): any {
   switch (type) {

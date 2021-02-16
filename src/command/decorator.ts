@@ -1,7 +1,7 @@
-import { Message } from 'discord.js';
+import { Message, MessageEmbed } from 'discord.js';
 import { injectable } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
-import { Argument, ArgumentValidator, createArgumentErrorEmbed, isParsingError, parseAny } from './arguments';
+import { Argument, ArgumentValidator, createArgumentErrorEmbed, isParsingError, parseAny, ValidatorContext } from './arguments';
 import { AuthFunction, AuthReturn } from './authentication';
 import { ActionContext, ActionFunction, CommandClass } from './interfaces';
 
@@ -102,6 +102,16 @@ export function Command(options: CommandOptions) {
         if (errors.length > 0) return { status: 'error', message: errors.join('\n') };
         return { status: 'succes' };
       }
+
+      generateHelpEmbed(): MessageEmbed {
+        const helpEmbed = new MessageEmbed()
+          .setTitle(options.name)
+          .setDescription(options.description);
+
+        if(options.arguments) helpEmbed.addField('Syntax', generateSyntax(options.arguments));
+
+        return helpEmbed;
+      }
     }
 
     // Activate dependency injection
@@ -191,7 +201,12 @@ async function parseAndValidateArgument(argument: Argument, input: string, messa
     }
 
     for await (const validator of validators) {
-      const validatorReturn = await validator(parsedArgument);
+      const validatorContext: ValidatorContext = {
+        val: parsedArgument,
+        message
+      }
+        
+      const validatorReturn = await validator(validatorContext);
       if (validatorReturn.status == 'error') {
         errorHappened = true;
         message.channel.send(createArgumentErrorEmbed(message, inputArgument, { error: validatorReturn.message }));
@@ -202,4 +217,13 @@ async function parseAndValidateArgument(argument: Argument, input: string, messa
 
   if (errorHappened) return { status: 'error', msg: '' };
   return parsedArgument;
+}
+
+function generateSyntax(args: Argument[]): string {
+  return args.map(arg => {
+    const { optional, key, rest } = arg;
+    const [start, end] = optional ? ['[', ']'] : ['<', '>'];
+
+    return `${start}${rest ? '...' : ''}${key}${end}`
+  }).join(' ');
 }
