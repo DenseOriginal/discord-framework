@@ -1,7 +1,14 @@
 import { Message, MessageEmbed } from 'discord.js';
 import { injectable } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
-import { Argument, ArgumentValidator, createArgumentErrorEmbed, isParsingError, parseAny, ValidatorContext } from './arguments';
+import {
+  Argument,
+  ArgumentValidator,
+  createArgumentErrorEmbed,
+  isParsingError,
+  parseAny,
+  ValidatorContext,
+} from './arguments';
 import { AuthFunction, AuthReturn } from './authentication';
 import { ActionContext, ActionFunction, CommandClass } from './interfaces';
 
@@ -104,11 +111,9 @@ export function Command(options: CommandOptions) {
       }
 
       generateHelpEmbed(): MessageEmbed {
-        const helpEmbed = new MessageEmbed()
-          .setTitle(options.name)
-          .setDescription(options.description);
+        const helpEmbed = new MessageEmbed().setTitle(options.name).setDescription(options.description);
 
-        if(options.arguments) helpEmbed.addField('Syntax', generateSyntax(options.arguments));
+        if (options.arguments) helpEmbed.addField('Syntax', generateSyntax(options.arguments));
 
         return helpEmbed;
       }
@@ -203,9 +208,9 @@ async function parseAndValidateArgument(argument: Argument, input: string, messa
     for await (const validator of validators) {
       const validatorContext: ValidatorContext = {
         val: parsedArgument,
-        message
-      }
-        
+        message,
+      };
+
       const validatorReturn = await validator(validatorContext);
       if (validatorReturn.status == 'error') {
         errorHappened = true;
@@ -220,10 +225,12 @@ async function parseAndValidateArgument(argument: Argument, input: string, messa
 }
 
 function generateSyntax(args: Argument[]): string {
-  return args.map(arg => {
-    const { optional, key, rest } = arg;
-    const [start, end] = optional ? ['[', ']'] : ['<', '>'];
+  return args
+    .map((arg) => {
+      const { optional, key, rest } = arg;
+      const [start, end] = optional ? ['[', ']'] : ['<', '>'];
 
-    return `${start}${rest ? '...' : ''}${key}${end}`
-  }).join(' ');
+      return `${start}${rest ? '...' : ''}${key}${end}`;
+    })
+    .join(' ');
 }

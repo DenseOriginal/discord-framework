@@ -25,7 +25,7 @@ export const ArgumentParsers = {
 
 export interface ValidatorContext {
   val: any;
-  message: Message
+  message: Message;
 }
 export type ArgumentValidatorReturn = Status.Error | Status.Succes;
 export type ArgumentValidator = (context: ValidatorContext) => PromiseOrNot<ArgumentValidatorReturn>;
