@@ -207,7 +207,7 @@ async function parseAndValidateArgument(argument: Argument, input: string, messa
 
     for await (const validator of validators) {
       const validatorContext: ValidatorContext = {
-        val: parsedArgument,
+        argument: parsedArgument,
         message,
       };
 
