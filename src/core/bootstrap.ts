@@ -11,7 +11,7 @@ export interface BootstrapOptions {
 }
 
 export function bootstrap(mainHandler: constructor<any>, options: BootstrapOptions, client = new Client()): Client {
-  container.register<Client>('Client', { useValue: client });
+  Reflect.defineMetadata("discord:client", client, global);
 
   const handler: HandlerClass = container.resolve(mainHandler);
   client.on('message', (message: Message) => {
