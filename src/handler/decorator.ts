@@ -4,6 +4,7 @@ import { Message, MessageEmbed } from 'discord.js';
 import { container, injectable } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
 import { HandlerClass } from './interfaces';
+import { anyToArray } from './utils/helper';
 
 export interface HandlerOptions {
   /**
@@ -122,12 +123,7 @@ export function Handler(options: HandlerOptions) {
 
       async canRun(messageContext: Message): Promise<AuthReturn> {
         if (!options.canRun) return { status: 'succes' };
-        const authFunctions: AuthFunction[] = [];
-        if (Array.isArray(options.canRun)) {
-          authFunctions.push(...options.canRun);
-        } else {
-          authFunctions.push(options.canRun);
-        }
+        const authFunctions: AuthFunction[] = anyToArray(options.canRun);
 
         const errors: string[] = [];
 
