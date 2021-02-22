@@ -5,9 +5,32 @@ import { container } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
 
 export interface BootstrapOptions {
+  /**
+   * @description
+   * The token that the bot should use to authenticate with
+   */
   token: string;
+
+  /**
+   * @description
+   * The prefix the bot listens for
+   */
   prefix: string;
+
+  /**
+   * @description
+   * Should the bot react to being pinged
+   * If this is active pinging the bot acts as a valid prefix
+   * And bypasses the set prefix
+   * 
+   * @default false
+   */
   usePingAsPrefix?: boolean;
+
+  /**
+   * @description
+   * Any listeners that should be hooked to the clients events
+   */
   listners?: constructor<any>[];
 }
 
