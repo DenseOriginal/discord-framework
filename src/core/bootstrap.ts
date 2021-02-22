@@ -22,7 +22,7 @@ export interface BootstrapOptions {
    * Should the bot react to being pinged
    * If this is active pinging the bot acts as a valid prefix
    * And bypasses the set prefix
-   * 
+   *
    * @default false
    */
   usePingAsPrefix?: boolean;
@@ -46,11 +46,14 @@ export function bootstrap(mainHandler: constructor<any>, options: BootstrapOptio
     // Find the bot id
     // Quit if message doesn't startwith botIdTag AND that we wan't to use a ping as prefix
     // And message doesn't start prefix as we still wan't to use that
-    const botIdTag = '<@!' +  client.user?.id + '>';
-    if((!message.content.startsWith(botIdTag) && options.usePingAsPrefix) && !message.content.startsWith(options.prefix)) return;
-    
+    const botIdTag = '<@!' + client.user?.id + '>';
+    if (!message.content.startsWith(botIdTag) && options.usePingAsPrefix && !message.content.startsWith(options.prefix))
+      return;
+
     // Remove the prefix of botIdTag
-    const input = message.content.slice((message.content.startsWith(options.prefix) ? options.prefix : botIdTag).length);
+    const input = message.content.slice(
+      (message.content.startsWith(options.prefix) ? options.prefix : botIdTag).length,
+    );
 
     handler.run(message, input.trim());
   });

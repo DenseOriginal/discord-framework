@@ -86,12 +86,12 @@ export function Handler(options: HandlerOptions) {
           this.commands.find((command) => command.alias?.includes(commandName)) ||
           this.handlers.find((handler) => nameMatches(handler.nameRegExp || handler.name, commandName)) ||
           this.handlers.find((handler) => handler.alias?.includes(commandName));
-        
+
         // Log an error to the user on discord that it couldn't find any command
         if (!command) {
           // Quit without any output to the discord user
           // If options.silentOnNoCommand is true
-          if(options.silentOnNoCommand) return;
+          if (options.silentOnNoCommand) return;
           message.channel.send(createErrorEmbed(message, { status: 'error', message: 'I cannot find that command' }));
           return;
         }
