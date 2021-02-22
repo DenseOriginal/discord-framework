@@ -6,12 +6,52 @@ import { constructor } from 'tsyringe/dist/typings/types';
 import { HandlerClass } from './interfaces';
 
 export interface HandlerOptions {
+  /**
+   * @description
+   * The name of the handler
+   * Used for finding the handler
+   */
   name: string;
+
+  /**
+   * @description
+   * Any aliasses for the handler
+   * The name property takes superiority over any alias
+   */
   alias?: string[];
+
+  /**
+   * @description
+   * Regular Expression for matching the name
+   * If this is defined it takes supetiority over the name property
+   */
   nameRegExp?: RegExp;
+
+  /**
+   * @description
+   * The sub command that this handler handles
+   */
   commands?: constructor<any>[];
+
+  /**
+   * @description
+   * Any subhandlers for the handler
+   */
   handlers?: constructor<any>[];
+
+  /**
+   * @description
+   * Authentication functions to determine wether any user has permission
+   * To run this handler
+   * If this check fails the user is denied permission to any subcommands
+   */
   canRun?: AuthFunction | AuthFunction[];
+
+  /**
+   * @description
+   * If this is true the handler will not send any response back to the user if the handler
+   * can't find any sub commands or sub handlers
+   */
   silentOnNoCommand?: boolean;
 }
 
