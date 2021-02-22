@@ -13,11 +13,46 @@ import { AuthFunction, AuthReturn } from './authentication';
 import { ActionContext, ActionFunction, CommandClass } from './interfaces';
 
 export interface CommandOptions {
+  /**
+   * @description
+   * The name of the command
+   * Used for finding this command
+   */
   name: string;
+
+  /**
+   * @description
+   * Any aliasses for this command
+   * The name property takes superiority over any alias
+   */
   alias?: string[];
+
+  /**
+   * @description
+   * Regular Expression for matching the name
+   * If this is defined it takes supetiority over the name property
+   */
   nameRegExp?: RegExp;
+
+  /**
+   * @description
+   * Description of this command
+   * Used for for help command
+   */
   description?: string;
+
+  /**
+   * @description
+   * Any arguments that should be parsed from the original message content
+   */
   arguments?: Argument[];
+
+  /**
+   * @description
+   * Authentication functions for this command
+   * If this check fails the user will be denied acces to this command
+   * And an error message will be sent back to the user
+   */
   canRun?: AuthFunction | AuthFunction[];
 }
 
