@@ -1,6 +1,7 @@
 import { Status } from '../core/interfaces';
 import { GuildMember, Message, MessageEmbed, Role } from 'discord.js';
 import { PromiseOrNot } from './interfaces';
+import { anyToArray } from './utils/helper';
 
 export type ArgumentTypes = 'string' | 'number' | 'member' | 'role';
 export interface Argument {
@@ -108,4 +109,83 @@ export function createArgumentErrorEmbed(message: Message, invalidArg: string, e
   return new MessageEmbed()
     .setColor('#ff4d4d')
     .addField('Whoops something happened', '```' + `${content}\n${correctionArrows}` + '``` \n' + error.error);
+}
+
+/**
+ * @description
+ * Function to validate that the arguments are in valid order
+ * Automaticly throw an error to alert the developer
+ * 
+ * @param args The arguments to check
+ * @param className The name of the class the arguments belong to
+ */
+export function validateArguments(args: Argument | Argument[] | undefined, className: string): void {
+  if (!args || !Array.isArray(args)) return;
+
+  let optionalFound = false;
+  let restFound = false;
+  const checkedKeys: string[] = [];
+
+  for (const arg of args) {
+    const { optional: isOptinal, rest: isRest, key } = arg;
+
+    // Check for duplicate key
+    if (checkedKeys.includes(key)) throw new Error(`Duplicate key "${key}" found on command ${className}`);
+    checkedKeys.push(key);
+
+    // Check optional and rest arguments are placed correctly
+    if (!isOptinal && optionalFound) throw new Error(`Optional arguments can only be last: ${className}`);
+    if (isRest && restFound) throw new Error(`There can only be one rest argument: ${className}`);
+    if (restFound) throw new Error(`Rest argument can only be last: ${className}`);
+
+    if (isOptinal) optionalFound = true;
+    if (isRest) restFound = true;
+  }
+}
+
+/**
+ * @description
+ * Parses and validatet an input against an argument
+ * Returns the parsed argument
+ * 
+ * @param argument Argument to check
+ * @param input Input to check the argument against
+ * @param message The origin message
+ */
+export async function parseAndValidateArgument(argument: Argument, input: string, message: Message): Promise<any> {
+  const { type, validator, optional } = argument;
+  let errorHappened = false;
+
+  // Parse Argument
+  const inputArgument = input;
+  const parsedArgument = await parseAny(type, inputArgument, message);
+
+  if (isParsingError(parsedArgument)) {
+    if (optional) return;
+    errorHappened = true;
+    message.channel.send(createArgumentErrorEmbed(message, inputArgument, parsedArgument));
+  }
+
+  // Validate argument if theres any validators
+  // And the wasn't any errors with parsend
+  if (validator && !errorHappened) {
+    const validators: ArgumentValidator[] = anyToArray(validator);
+
+    for await (const validator of validators) {
+      const validatorContext: ValidatorContext = {
+        argument: parsedArgument,
+        message,
+      };
+
+      const validatorReturn = await validator(validatorContext);
+      if (validatorReturn.status == 'error') {
+        errorHappened = true;
+        message.channel.send(createArgumentErrorEmbed(message, inputArgument, { error: validatorReturn.message }));
+        break;
+      }
+    }
+  }
+
+  if (errorHappened) return { status: 'error', msg: '' };
+  return parsedArgument;
 }

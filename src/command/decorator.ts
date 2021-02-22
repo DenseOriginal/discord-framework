@@ -3,14 +3,12 @@ import { injectable } from 'tsyringe';
 import { constructor } from 'tsyringe/dist/typings/types';
 import {
   Argument,
-  ArgumentValidator,
-  createArgumentErrorEmbed,
-  isParsingError,
-  parseAny,
-  ValidatorContext,
+  parseAndValidateArgument,
+  validateArguments,
 } from './arguments';
 import { AuthFunction, AuthReturn } from './authentication';
 import { ActionContext, ActionFunction, CommandClass } from './interfaces';
+import { anyToArray, camelCase, isFunction, splitMessageContent } from './utils/helper';
 
 export interface CommandOptions {
   /**
@@ -125,12 +123,7 @@ export function Command(options: CommandOptions) {
 
       async canRun(messageContext: Message): Promise<AuthReturn> {
         if (!options.canRun) return { status: 'succes' };
-        const authFunctions: AuthFunction[] = [];
-        if (Array.isArray(options.canRun)) {
-          authFunctions.push(...options.canRun);
-        } else {
-          authFunctions.push(options.canRun);
-        }
+        const authFunctions: AuthFunction[] = anyToArray(options.canRun);
 
         const errors: string[] = [];
 
@@ -159,104 +152,6 @@ export function Command(options: CommandOptions) {
     injectableDecorator(newTarget);
     return newTarget;
   };
-}
-
-function camelCase(str: string) {
-  return str
-    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
-      return index === 0 ? word.toLowerCase() : word.toUpperCase();
-    })
-    .replace(/\s+/g, '');
-}
-
-function isFunction(func: any): boolean {
-  return !!(func && func.constructor && func.call && func.apply);
-}
-
-function splitMessageContent(str: string) {
-  //The parenthesis in the regex creates a captured group within the quotes
-  const testRegex = /[^\s"]+|"([^"]*)"/gi;
-  const matches = [];
-  let match: RegExpExecArray | null;
-
-  do {
-    //Each call to exec returns the next regex match as an array
-    match = testRegex.exec(str);
-    if (match != null) {
-      //Index 1 in the array is the captured group if it exists
-      //Index 0 is the matched text, which we use if no captured group exists
-      matches.push(match[1] ? match[1] : match[0]);
-    }
-  } while (match != null);
-
-  return matches;
-}
-
-function validateArguments(args: Argument | Argument[] | undefined, className: string) {
-  if (!args || !Array.isArray(args)) return true;
-
-  let optionalFound = false;
-  let restFound = false;
-  const checkedKeys: string[] = [];
-
-  for (const arg of args) {
-    const { optional: isOptinal, rest: isRest, key } = arg;
-
-    // Check for duplicate key
-    if (checkedKeys.includes(key)) throw new Error(`Duplicate key "${key}" found on command ${className}`);
-    checkedKeys.push(key);
-
-    // Check optional and rest arguments are placed correctly
-    if (!isOptinal && optionalFound) throw new Error(`Optional arguments can only be last: ${className}`);
-    if (isRest && restFound) throw new Error(`There can only be one rest argument: ${className}`);
-    if (restFound) throw new Error(`Rest argument can only be last: ${className}`);
-
-    if (isOptinal) optionalFound = true;
-    if (isRest) restFound = true;
-  }
-}
-
-async function parseAndValidateArgument(argument: Argument, input: string, message: Message) {
-  const { type, validator, optional } = argument;
-  let errorHappened = false;
-
-  // Parse Argument
-  const inputArgument = input;
-  const parsedArgument = await parseAny(type, inputArgument, message);
-
-  if (isParsingError(parsedArgument)) {
-    if (optional) return;
-    errorHappened = true;
-    message.channel.send(createArgumentErrorEmbed(message, inputArgument, parsedArgument));
-  }
-
-  // Validate argument if theres any validators
-  // And the wasn't any errors with parsend
-  if (validator && !errorHappened) {
-    const validators: ArgumentValidator[] = [];
-    if (Array.isArray(validator)) {
-      validators.push(...validator);
-    } else {
-      validators.push(validator);
-    }
-
-    for await (const validator of validators) {
-      const validatorContext: ValidatorContext = {
-        argument: parsedArgument,
-        message,
-      };
-
-      const validatorReturn = await validator(validatorContext);
-      if (validatorReturn.status == 'error') {
-        errorHappened = true;
-        message.channel.send(createArgumentErrorEmbed(message, inputArgument, { error: validatorReturn.message }));
-        break;
-      }
-    }
-  }
-
-  if (errorHappened) return { status: 'error', msg: '' };
-  return parsedArgument;
 }
 
 function generateSyntax(args: Argument[]): string {
