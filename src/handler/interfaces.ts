@@ -1,17 +1,9 @@
-import { AuthFunction, CommandClass } from '../command';
-import { Message } from 'discord.js';
+import { AuthFunction } from "../utils/authentication";
+import { MessageReader } from "../utils/reader";
 
-/**
- * @description
- * Default class for all handlers
- */
-export interface HandlerClass {
-  name: string;
-  alias?: string[];
-  nameRegExp?: RegExp;
-  commands: CommandClass[];
-  run: RunFunction;
-  canRun: AuthFunction;
+export interface HandlerInterface {
+    name: string;
+    alias?: string[];
+    canRun: AuthFunction;
+    run(messageReader: MessageReader): void;
 }
-
-export type RunFunction = (message: Message, input: string) => void;

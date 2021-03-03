@@ -1,4 +1,3 @@
-export * from './interfaces';
-export * from './bootstrap';
-export * from './service';
-export * from './client';
+export * from "./bootstrap";
+export * from "./use-client";
+export * from "./service";

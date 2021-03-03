@@ -1,42 +1,26 @@
-import { APIMessageContentResolvable, Message, MessageAdditions, MessageOptions } from 'discord.js';
-import { AuthFunction } from './authentication';
+import { APIMessageContentResolvable, Message, MessageAdditions, MessageOptions } from "discord.js";
+import { Argument } from "src/arguments/argument";
+import { AuthFunction } from "../utils/authentication";
+import { MessageReader } from "../utils/reader";
 
-/**
- * @description
- * Default class for every command
- */
-export interface CommandClass extends CanRun, Action {
-  name: string;
-  alias?: string[];
-  nameRegExp?: RegExp;
-  description: string;
+export interface CommandInterface {
+    name: string;
+    alias?: string[];
+    description?: string;
+    arguments: Argument[];
+    canRun: AuthFunction;
+    execute(messageReader: MessageReader): void;
 }
 
-/**
- * @description
- * Method to check if user can run the command
- * should return a boolean value
- *
- * Authentication can also be applied in command decorator
- * If authentication is defined both on class and in decorator
- * The decorator authentcation will have superiority
- */
-export interface CanRun {
-  canRun: AuthFunction;
-}
+type PromiseOrNot<T> = Promise<T> | T;
 
-/**
- * @description
- *
- */
 export interface Action {
-  action: ActionFunction;
+    action: ActionFunction;
 }
 
-export type MessageResolvable = APIMessageContentResolvable | (MessageOptions & { split?: false }) | MessageAdditions;
+export type MessageContentResolvable = APIMessageContentResolvable | (MessageOptions & { split?: false }) | MessageAdditions;
 export type ActionContext = {
-  message: Message;
-  args: { [arg: string]: any };
+    message: Message;
+    args: { [arg: string]: any };
 };
-export type PromiseOrNot<T> = Promise<T> | T;
-export type ActionFunction = (context: ActionContext) => PromiseOrNot<MessageResolvable | void>;
+export type ActionFunction = (context: ActionContext) => PromiseOrNot<MessageContentResolvable | void>;

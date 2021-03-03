@@ -1,69 +1,76 @@
-import { HandlerClass } from '../handler';
-import { ListenerClass } from '../listener';
-import { Client, Message } from 'discord.js';
-import { container } from 'tsyringe';
-import { constructor } from 'tsyringe/dist/typings/types';
+import { Client, Message } from "discord.js";
+import { HandlerInterface } from "../handler/interfaces";
+import { initHandler } from "../utils/helpers";
+import { MessageReader } from "../utils/reader";
 
 export interface BootstrapOptions {
-  /**
-   * @description
-   * The token that the bot should use to authenticate with
-   */
-  token: string;
+    /**
+     * @description
+     * The token that the bot should use to authenticate with
+     */
+    token: string;
 
-  /**
-   * @description
-   * The prefix the bot listens for
-   */
-  prefix: string;
+    /**
+     * @description
+     * The prefix the bot listens for
+     */
+    prefix: string;
 
-  /**
-   * @description
-   * Should the bot react to being pinged
-   * If this is active pinging the bot acts as a valid prefix
-   * And bypasses the set prefix
-   *
-   * @default false
-   */
-  usePingAsPrefix?: boolean;
-
-  /**
-   * @description
-   * Any listeners that should be hooked to the clients events
-   */
-  listners?: constructor<any>[];
+    /**
+     * @description
+     * Should the bot react to being pinged
+     * If this is active pinging the bot acts as a valid prefix
+     * And bypasses the set prefix
+     *
+     * @default false
+     */
+    usePingAsPrefix?: boolean;
 }
 
-export function bootstrap(mainHandler: constructor<any>, options: BootstrapOptions, client = new Client()): Client {
-  Reflect.defineMetadata('discord:client', client, global);
+type constructor<T = any> = new (...args: any[]) => T;
 
-  const handler: HandlerClass = container.resolve(mainHandler);
-  client.on('message', (message: Message) => {
-    // Quit if message doesn't start with prefix
-    // And options.usePingAsPrefix is false
-    if (!message.content.startsWith(options.prefix) && !options.usePingAsPrefix) return;
+export function bootstrap(mainHandler: constructor, options: BootstrapOptions, client = new Client()): Client {
+    let prefix = options.prefix;
+    let cleanPrefix: string;
+    const main: HandlerInterface = initHandler(mainHandler);
 
-    // Find the bot id
-    // Quit if message doesn't startwith botIdTag AND that we wan't to use a ping as prefix
-    // And message doesn't start prefix as we still wan't to use that
-    const botIdTag = '<@!' + client.user?.id + '>';
-    if (!message.content.startsWith(botIdTag) && options.usePingAsPrefix && !message.content.startsWith(options.prefix))
-      return;
+    // Define the client on global
+    // So that you can use the client in a class
+    Reflect.defineMetadata('discord:client', client, global);
 
-    // Remove the prefix of botIdTag
-    const input = message.content.slice(
-      (message.content.startsWith(options.prefix) ? options.prefix : botIdTag).length,
-    );
+    client.on('message', (message) => {
+        if (!shouldHandleMessage(message)) return;
+        if (!message.content.startsWith(prefix)) {
+            // If message doesn't start with prefix
+            // AND usePingAsPrefix is true try again with the bot tag as prefix
+            // Otherwise just exit
+            if (options.usePingAsPrefix) {
+                prefix = '<@!' + client.user?.id + '>';
 
-    handler.run(message, input.trim());
-  });
+                // If message doesn't start with bot tag either, then return
+                if (!message.content.startsWith(prefix)) return;
 
-  options?.listners?.forEach((constructor: constructor<ListenerClass>) => {
-    const listener = container.resolve(constructor);
-    client.on(listener.event, listener.listener);
-  });
+                // If the message starts with the tag
+                // Set the cleanPrefix to the name of the bot
+                // So that error logging will result in the name of the bot
+                // Instead of the id
+                // @bot name instead if <@!7239468230843745>
+                cleanPrefix = `@${message.guild?.me?.nickname || client.user?.username} `;
+            } else { return; }
+        }
 
-  client.login(options.token);
+        // Create a messageReader for the message
+        // And run it
+        const reader = new MessageReader(message, prefix, cleanPrefix);
+        main.run(reader);
+    });
 
-  return client;
+    client.login(options.token);
+    return client;
+}
+
+function shouldHandleMessage(message: Message): boolean {
+    if (message.partial) return false;
+    if (message.author.bot) return false;
+    return true;
 }
