@@ -74,7 +74,7 @@ export function Command(opt: CommandOptions) {
 
         // Call the commands action function with the context
         // Save the return so we can return it to the user
-        const actionReturn = await targetAction(context);
+        const actionReturn = await targetAction.apply(this, [context]);
 
         // If we got any return from the action function
         // Send it back to the user
