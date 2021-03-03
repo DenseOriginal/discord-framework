@@ -1,18 +1,18 @@
-import { Message } from "discord.js";
-import { FriendlyError } from "../errors/base";
+import { Message } from 'discord.js';
+import { FriendlyError } from '../errors/base';
 
 export interface ArgumentOptions {
-    key: string,
-    description?: string;
-    type?: string;
-    optional?: boolean;
-    rest?: boolean;
-    parser?: Parser<any>;
-    validators?: Validator[];
+  key: string;
+  description?: string;
+  type?: string;
+  optional?: boolean;
+  rest?: boolean;
+  parser?: Parser<any>;
+  validators?: Validator[];
 }
 
 export interface ArgumentTypeInterface<T = any> {
-    parse: Parser<T>
+  parse: Parser<T>;
 }
 
 type PromiseOrNot<T> = Promise<T> | T;

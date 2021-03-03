@@ -1,5 +1,5 @@
-import { BaseArgumentType } from "src/arguments";
-import { BaseRegistry } from "./base";
+import { BaseArgumentType } from 'src/arguments';
+import { BaseRegistry } from './base';
 
 class TypeRegistry extends BaseRegistry<BaseArgumentType> {}
 const TypeRegistry_ = new TypeRegistry();

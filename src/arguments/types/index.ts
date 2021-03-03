@@ -1,15 +1,15 @@
-import { TypeRegistry } from "../../registers";
-import { BooleanArgumentType } from "./boolean";
-import { StringArgumentType } from "./string";
-import { IntegerArgumentType } from "./integer";
-import { FloatArgumentType } from "./float";
-import { MemberArgumentType } from "./member";
+import { TypeRegistry } from '../../registers';
+import { BooleanArgumentType } from './boolean';
+import { StringArgumentType } from './string';
+import { IntegerArgumentType } from './integer';
+import { FloatArgumentType } from './float';
+import { MemberArgumentType } from './member';
 
-export * from "./base";
-export * from "./boolean";
-export * from "./string";
-export * from "./integer";
-export * from "./float";
+export * from './base';
+export * from './boolean';
+export * from './string';
+export * from './integer';
+export * from './float';
 
 // Register default types
 TypeRegistry.register('string', new StringArgumentType());

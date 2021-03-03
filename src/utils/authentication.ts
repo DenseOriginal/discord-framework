@@ -1,5 +1,5 @@
-import { Message } from "discord.js";
-import { FriendlyError } from "src/errors/base";
+import { Message } from 'discord.js';
+import { FriendlyError } from 'src/errors/base';
 
 type PromiseOrNot<T> = Promise<T> | T;
 
