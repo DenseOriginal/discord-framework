@@ -4,6 +4,7 @@ import { TypeRegistry } from '../registers';
 import { FriendlyError } from '../errors/base';
 import { ArgumentOptions, Parser, Validator } from './interfaces';
 import { BaseArgumentType } from './types/base';
+import { InternalLogger } from '../utils/logger';
 
 export class Argument {
   key: string;
@@ -47,20 +48,30 @@ export class Argument {
   }
 
   async validate(val: any, message: Message): Promise<FriendlyError | void> {
-    const validatorsAsPromise = this.validators.map((f) => f(val, message));
-    const validatorReturns = await Promise.all(validatorsAsPromise);
-    const friendlyErrors: FriendlyError[] = validatorReturns.filter(
-      (v) => v instanceof FriendlyError,
-    ) as FriendlyError[];
-    if (friendlyErrors.length == 0) return;
-
-    // If there was any failed validate functions
-    // Map them to one string, and return that as a friendlyError
-    return new FriendlyError(friendlyErrors.map((e) => e.message).join('\n'));
+    try {
+      const validatorsAsPromise = this.validators.map((f) => f(val, message));
+      const validatorReturns = await Promise.all(validatorsAsPromise);
+      const friendlyErrors: FriendlyError[] = validatorReturns.filter(
+        (v) => v instanceof FriendlyError,
+      ) as FriendlyError[];
+      if (friendlyErrors.length == 0) return;
+  
+      // If there was any failed validate functions
+      // Map them to one string, and return that as a friendlyError
+      return new FriendlyError(friendlyErrors.map((e) => e.message).join('\n'));
+    } catch (error) {
+      InternalLogger.error(error);
+      return error instanceof FriendlyError ? error : new FriendlyError('Something happened trying to read this message');
+    }
   }
 
   async parse(val: any, message: Message): Promise<FriendlyError | any> {
-    return this.type?.parse(val, message) || this.parser?.(val, message) || Promise.resolve(val);
+    try {
+      return this.type?.parse(val, message) || this.parser?.(val, message) || Promise.resolve(val);
+    } catch (error) {
+      InternalLogger.error(error);
+      return error instanceof FriendlyError ? error : new FriendlyError('Something happened trying to read this message');
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -7,6 +7,7 @@ import { CommandInterface } from '../command/interfaces';
 import { HandlerInterface } from './interfaces';
 import { Message } from 'discord.js';
 import { AuthFunction } from 'src/utils/authentication';
+import { InternalLogger } from '../utils/logger';
 
 export interface HandlerOptions {
   /**
@@ -22,6 +23,13 @@ export interface HandlerOptions {
    * The name property takes superiority over any alias
    */
   alias?: string[];
+
+  /**
+   * @description
+   * Description of this command
+   * Used for for help command
+   */
+   description?: string;
 
   /**
    * @description
@@ -53,6 +61,8 @@ export interface HandlerOptions {
 
 export function Handler(opt: HandlerOptions) {
   return function <T extends new (...args: any[]) => any>(target: T): T {
+    if(!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
+
     class newTarget extends target implements HandlerInterface {
       commands: CommandInterface[] = opt.commands?.map(initCommand) || [];
       handlers: HandlerInterface[] = opt.handlers?.map(initHandler) || [];
@@ -92,6 +102,8 @@ export function Handler(opt: HandlerOptions) {
             (<HandlerInterface>commandOrHandler).run(messageReader);
           }
         } catch (_err) {
+          InternalLogger.error(_err);
+
           // If the thrown error is a friendlyError send it back to the user
           // If not say we don't know what
           const error = _err instanceof FriendlyError ? _err : new FriendlyError("We don't know what");
@@ -119,7 +131,8 @@ export function Handler(opt: HandlerOptions) {
           // Map them to one string, and return that as a friendlyError
           return new FriendlyError(filteredResults.map((e) => e.message).join('\n'));
         } catch (error) {
-          console.log('yee');
+          InternalLogger.error(`Uncaught error inside canRun function on ${target.name}!`);
+          InternalLogger.error(error)
 
           // If any canRun function fails
           // and its a friendlyError return it

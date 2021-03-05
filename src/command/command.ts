@@ -7,6 +7,7 @@ import { ActionContext, ActionFunction, CommandInterface } from './interfaces';
 import { ArgumentOptions } from '../arguments/interfaces';
 import { validateArguments } from '../arguments/utils/helpers';
 import { Argument } from '../arguments/argument';
+import { InternalLogger } from '../utils/logger';
 
 export interface CommandOptions {
   /**
@@ -52,6 +53,7 @@ export function Command(opt: CommandOptions) {
 
     validateArguments(opt.arguments, target.name);
     const argumentsAsClass = opt.arguments?.map((arg) => new Argument(arg));
+    if(!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
 
     class newTarget extends target implements CommandInterface {
       name = opt.name;
@@ -74,13 +76,19 @@ export function Command(opt: CommandOptions) {
 
         // Call the commands action function with the context
         // Save the return so we can return it to the user
-        const actionReturn = await targetAction.apply(this, [context]);
+        try {
+          const actionReturn = await targetAction.apply(this, [context]);
 
-        // If we got any return from the action function
-        // Send it back to the user
-        if (actionReturn) {
-          message.channel.send(actionReturn);
+          // If we got any return from the action function
+          // Send it back to the user
+          if (actionReturn) {
+            message.channel.send(actionReturn);
+          }
+        } catch (error) {
+          InternalLogger.error(`Uncaught error thrown inside ${target.name}.action`);
+          InternalLogger.error(error);
         }
+
       }
 
       async canRun(messageToCheckAgainst: Message): Promise<FriendlyError | void> {
@@ -101,6 +109,9 @@ export function Command(opt: CommandOptions) {
           // Map them to one string, and return that as a friendlyError
           return new FriendlyError(filteredResults.map((e) => e.message).join('\n'));
         } catch (error) {
+          InternalLogger.error(`Uncaught error inside canRun function on ${target.name}!`);
+          InternalLogger.error(error);
+
           // If any canRun function fails
           // and its a friendlyError return it
           // So it can be sent back to the user
