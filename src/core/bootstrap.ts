@@ -106,5 +106,10 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
 
 function shouldHandleMessage(message: Message): boolean {
   if (message.partial) return false;
+
+  // If the message was sent by this bot return
+  // This prevent possibilities of a feedback loop
+  // Where the bot replies to itself
+  if (message.author.id == message.client.user?.id) return false;
   return true;
 }
