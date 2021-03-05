@@ -34,6 +34,15 @@ export interface BootstrapOptions {
    * @default false
    */
   disableLogging?: boolean;
+
+  /**
+   * @description
+   * Allow bots to issue commands
+   * If this is true your bot will react to other bots
+   * 
+   * @default false
+   */
+  allowBots?: boolean;
 }
 
 type constructor<T = any> = new (...args: any[]) => T;
@@ -53,6 +62,10 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
 
     client.on('message', (message) => {
       if (!shouldHandleMessage(message)) return;
+
+      // Return if the command was issued by a bot
+      // And options is set to not respond to bots
+      if(message.author.bot && !options.allowBots) return;
       if (!message.content.startsWith(prefix)) {
         // If message doesn't start with prefix
         // AND usePingAsPrefix is true try again with the bot tag as prefix
@@ -93,6 +106,5 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
 
 function shouldHandleMessage(message: Message): boolean {
   if (message.partial) return false;
-  if (message.author.bot) return false;
   return true;
 }
