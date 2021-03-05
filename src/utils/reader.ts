@@ -1,4 +1,4 @@
-import { Message, MessageEmbed } from 'discord.js';
+import { Message, MessageEmbed, MessageMentions } from 'discord.js';
 import { FriendlyError } from '../errors/base';
 import { createErrorEmbed } from '../errors/embeds';
 
@@ -26,7 +26,7 @@ export class MessageReader {
     this.cleanBody = message.cleanContent.replace(prefix, '').trim();
 
     this.args = getArguments(this.body);
-    this.cleanArgs = getArguments(this.cleanBody);
+    this.cleanArgs = makeCleanArgs(this.args, message);
   }
 
   getNext(): string | undefined {
@@ -42,17 +42,57 @@ export class MessageReader {
   }
 
   createArgumentErrorEmbed(idx: number, error: FriendlyError): MessageEmbed | undefined {
-    const truncatedArgs = this.args.map(truncate(25));
+    const truncatedArgs = this.cleanArgs.map(truncate(25));
     const arrowOffset = truncatedArgs.slice(0, idx).join(' ').length + (this.cleanPrefix || this.prefix).length + 1;
     const arrowLength = (truncatedArgs[idx] || Array(5)).length;
 
     return createErrorEmbed(
       error,
       `${this.cleanPrefix || this.prefix}${truncatedArgs.join(' ')}` +
-        '\n' +
-        `${' '.repeat(arrowOffset)}${'^'.repeat(arrowLength)}`,
+      '\n' +
+      `${' '.repeat(arrowOffset)}${'^'.repeat(arrowLength)}`,
     );
   }
+}
+
+function makeCleanArgs(args: string[], message: Message): string[] {
+  const { CHANNELS_PATTERN, ROLES_PATTERN, USERS_PATTERN } = MessageMentions;
+
+  return args.map(arg => {
+    if (arg.match(USERS_PATTERN)) return getUsernameFromID(arg, message);
+    if (arg.match(ROLES_PATTERN)) return getRoleNameFromID(arg, message);
+    if (arg.match(CHANNELS_PATTERN)) return getChannelNameFromID(arg, message);
+    return arg;
+  })
+}
+
+function getUsernameFromID(id: string, message: Message): string {
+  const mentions = message.mentions;
+  const snowflake = id.match(/\d+/g)?.[0];
+  if (!snowflake) return id;
+  const foundMember = mentions.members?.get(snowflake)
+  if (foundMember) return '@' + (foundMember.nickname || foundMember.user.username);
+  const foundUser = mentions.users.get(snowflake);
+  if (foundUser) return '@' + foundUser.username;
+  return id;
+}
+
+function getRoleNameFromID(id: string, message: Message): string {
+  const mentions = message.mentions;
+  const snowflake = id.match(/\d+/g)?.[0];
+  if (!snowflake) return id;
+  const foundRole = mentions.roles.get(snowflake);
+  if(foundRole) return '@' + foundRole.name;
+  return id;
+}
+
+function getChannelNameFromID(id: string, message: Message): string {
+  const snowflake = id.match(/\d+/g)?.[0];
+  if(!snowflake) return id;
+  const foundChannel = message.client.channels.cache.get(snowflake);
+  if(!foundChannel) return id;
+  if((<any>foundChannel).name) return '#' + (<any>foundChannel).name;
+  return id;
 }
 
 function truncate(len: number) {
