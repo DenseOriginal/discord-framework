@@ -49,7 +49,6 @@
     "discord.js": "^12.5.1",
     "prettier": "^2.2.1",
     "reflect-metadata": "^0.1.13",
-    "tsyringe": "^4.4.0",
-    "winston": "^3.3.3"
+    "tsyringe": "^4.4.0"
   }
 }
