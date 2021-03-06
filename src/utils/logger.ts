@@ -86,3 +86,6 @@ export const InternalLogger = new Logger();
 // Start in paused mode
 // We can resume normal function in bootstrap if user wants it
 InternalLogger.pause();
+
+// Disable debug and verbose by default
+InternalLogger.disable('debug', 'verbose');
