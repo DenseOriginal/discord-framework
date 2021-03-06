@@ -1,6 +1,3 @@
-import { createLogger, format } from "winston";
-import { Console } from "winston/lib/winston/transports";
-
 const Styles = {
     Black: "\u001b[30m",
     Red: "\u001b[38;5;1m",
@@ -24,7 +21,7 @@ const Styles = {
     Reversed: "\u001b[7m",
 };
 
-const levelsToColor = {
+const labelsToColor = {
     crit: Styles.Red,
     error: Styles.BrightRed,
     warn: Styles.BrightYellow,
@@ -33,67 +30,58 @@ const levelsToColor = {
     verbose: Styles.Cyan,
 }
 
-const levels = {
-    crit: 0,
-    error: 1,
-    warn: 2,
-    info: 3,
-    debug: 4,
-    verbose: 5
+export type Labels = "crit" | "error" | "warn" | "info" | "debug" | "verbose";
+export const LabelsArray: Labels[] = ["crit", "error", "warn", "info", "debug", "verbose"];
+interface Log {
+    label: Labels,
+    message: Error | string;
 }
 
-// https://github.com/winstonjs/winston/issues/1338#issuecomment-393238865
-const enumerateErrorFormat = format(info => {
-    if (isError(info.message)) {
-        info.message = Object.assign({
-            message: info.message.message,
-            stack: info.message.stack
-        }, info.message);
+class Logger {
+    private queue: Log[] = [];
+    private disabled = new Map<Labels, boolean>();
+    isPaused = false;
+
+    pause() { this.isPaused = true; }
+    resume() {
+        this.isPaused = false;
+        // On resume empty the queue
+        while (this.queue.length > 0) this.log(this.queue.shift());
     }
 
-    if (isError(info)) {
-        return Object.assign({
-            message: info.message,
-            stack: info.stack
-        }, info);
-    }
+    disable(...labels: Labels[]) { labels.forEach(label => this.disabled.set(label, true)); }
+    disableAll() { LabelsArray.forEach(l => this.disable(l)); }
+    enable(...labels: Labels[]) { labels.forEach(label => this.disabled.set(label, false)); }
 
-    return info;
-});
+    log(log: Log | undefined) {
+        if (!log) return;
+        const { label, message } = log;
+        if (this.disabled.get(label)) return;
+        if (this.isPaused) { this.queue.push(log); return; }
+        const timestamp = new Date().toLocaleString().substr(9).replace(/\./g, ':');
 
-const formatter = format.combine(
-    enumerateErrorFormat(),
-    format.timestamp(),
-    format.printf((template) => {
-        const { level, message, timestamp, stack: errorStack } = template;
-        
-        return '[' +
-            (<any>levelsToColor)[level] + // Format level with color
+        const messageToLog = '[' +
+            (<any>labelsToColor)[label] + // Format level with color
             Styles.Bold + // Make level bold
-            level.toUpperCase() + // Make level uppercase
+            label.toUpperCase() + // Make level uppercase
             Styles.Reset + // Rest the style so we can display the rest normal
-            '] ' + Styles.BrightBlack + formatDate(timestamp) +
-            Styles.Reset + ' ' + (errorStack || message);
-    })
-)
+            '] ' + Styles.BrightBlack + timestamp +
+            Styles.Reset + ' ' + (message instanceof Error ? message.stack || message.message : message);
 
+        console.log(messageToLog);
+    }
 
-function isError(val: any): val is Error {
-    return val instanceof Error;
+    private logTemplate = (label: Labels) => (message: string | Error) => this.log({ label, message });
+
+    crit = this.logTemplate("crit");
+    error = this.logTemplate("error");
+    warn = this.logTemplate("warn");
+    info = this.logTemplate("info");
+    debug = this.logTemplate("debug");
+    verbose = this.logTemplate("verbose");
 }
 
-function formatDate(date: string): string {
-    return new Date(date).toLocaleString().substr(9).replace(/\./g, ':');
-}
-
-export const InternalLogger = createLogger({
-    levels: levels,
-    format: formatter,
-    handleExceptions: false,
-    transports: [
-        new Console({ level: 'verbose', handleExceptions: false })
-    ]
-});
+export const InternalLogger = new Logger();
 
 // Start in paused mode
 // We can resume normal function in bootstrap if user wants it
