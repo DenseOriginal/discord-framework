@@ -52,7 +52,7 @@ export function Command(opt: CommandOptions) {
     const targetAction: ActionFunction = target.prototype.action;
 
     validateArguments(opt.arguments, target.name);
-    const argumentsAsClass = opt.arguments?.map((arg) => new Argument(arg));
+    const argumentsAsClass = opt.arguments?.map((arg) => new Argument(arg, target.name));
     if(!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
 
     class newTarget extends target implements CommandInterface {

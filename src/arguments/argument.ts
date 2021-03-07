@@ -15,7 +15,7 @@ export class Argument {
   validators: Validator[];
   private parser?: Parser;
 
-  constructor(opt: ArgumentOptions) {
+  constructor(opt: ArgumentOptions, parentName: string) {
     this.key = opt.key;
     this.description = opt.description || '';
     this.optional = !!opt.optional;
@@ -24,7 +24,7 @@ export class Argument {
     this.parser = opt.parser;
     if (opt.type) {
       const foundType = (this.type = TypeRegistry.find(opt.type));
-      if (!foundType) throw new TypeError(`Cannot find type ${opt.type}`);
+      if (!foundType) { InternalLogger.crit(`Cannot find argument type "${opt.type}" for argument "${opt.key}" on ${parentName}`); }
       this.type = foundType;
     }
 
