@@ -61,7 +61,7 @@ export class Argument {
       return new FriendlyError(friendlyErrors.map((e) => e.message).join('\n'));
     } catch (error) {
       InternalLogger.error(error);
-      return error instanceof FriendlyError ? error : new FriendlyError('Something happened trying to read this message');
+      return error instanceof FriendlyError ? error : new FriendlyError('Something happened trying to validate this message');
     }
   }
 
