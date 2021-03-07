@@ -23,9 +23,11 @@ export class Argument {
     this.validators = opt.validators || [];
     this.parser = opt.parser;
     if (opt.type) {
-      const foundType = TypeRegistry.find(opt.type);
-      if (!foundType) { InternalLogger.crit(`Cannot find argument type "${opt.type}" for argument "${opt.key}" on ${parentName}`); }
-      this.type = foundType;
+      setTimeout(() => {
+        const foundType = TypeRegistry.find(<string>opt.type);
+        if (!foundType) { InternalLogger.crit(`Cannot find argument type "${opt.type}" for argument "${opt.key}" on ${parentName}`); }
+        this.type = foundType;
+      })
     }
 
     Argument.validateOptions(opt);
