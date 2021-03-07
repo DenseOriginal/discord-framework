@@ -69,6 +69,7 @@ class Logger {
             Styles.Reset + ' ' + (message instanceof Error ? message.stack || message.message : message);
 
         console.log(messageToLog);
+        if (label == 'crit') process.exit(1);
     }
 
     private logTemplate = (label: Labels) => (message: string | Error) => this.log({ label, message });

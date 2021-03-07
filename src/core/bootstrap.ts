@@ -99,7 +99,6 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
     // If any error happened trying to bootstrap the code
     // Log it as a critical error and exit with error
     InternalLogger.crit(err);
-    process.exit(1);
   }
   return client;
 }
