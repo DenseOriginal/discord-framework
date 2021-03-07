@@ -4,6 +4,7 @@ import { StringArgumentType } from './string';
 import { IntegerArgumentType } from './integer';
 import { FloatArgumentType } from './float';
 import { MemberArgumentType } from './member';
+import { NumberArgumentType } from './number';
 
 export * from './base';
 export * from './boolean';
@@ -16,4 +17,5 @@ TypeRegistry.register('string', new StringArgumentType());
 TypeRegistry.register('boolean', new BooleanArgumentType());
 TypeRegistry.register('integer', new IntegerArgumentType());
 TypeRegistry.register('float', new FloatArgumentType());
+TypeRegistry.register('number', new NumberArgumentType());
 TypeRegistry.register('member', new MemberArgumentType());
