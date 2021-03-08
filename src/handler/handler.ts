@@ -29,7 +29,7 @@ export interface HandlerOptions {
    * Description of this command
    * Used for for help command
    */
-   description?: string;
+  description?: string;
 
   /**
    * @description
@@ -61,7 +61,7 @@ export interface HandlerOptions {
 
 export function Handler(opt: HandlerOptions) {
   return function <T extends new (...args: any[]) => any>(target: T): T {
-    if(!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
+    if (!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
 
     class newTarget extends target implements HandlerInterface {
       commands: CommandInterface[] = opt.commands?.map(initCommand) || [];
@@ -132,7 +132,7 @@ export function Handler(opt: HandlerOptions) {
           return new FriendlyError(filteredResults.map((e) => e.message).join('\n'));
         } catch (error) {
           InternalLogger.error(`Uncaught error inside canRun function on ${target.name}!`);
-          InternalLogger.error(error)
+          InternalLogger.error(error);
 
           // If any canRun function fails
           // and its a friendlyError return it

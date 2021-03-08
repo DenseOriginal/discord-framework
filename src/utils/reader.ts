@@ -49,8 +49,8 @@ export class MessageReader {
     return createErrorEmbed(
       error,
       `${this.cleanPrefix || this.prefix}${truncatedArgs.join(' ')}` +
-      '\n' +
-      `${' '.repeat(arrowOffset)}${'^'.repeat(arrowLength)}`,
+        '\n' +
+        `${' '.repeat(arrowOffset)}${'^'.repeat(arrowLength)}`,
     );
   }
 }
@@ -58,19 +58,19 @@ export class MessageReader {
 function makeCleanArgs(args: string[], message: Message): string[] {
   const { CHANNELS_PATTERN, ROLES_PATTERN, USERS_PATTERN } = MessageMentions;
 
-  return args.map(arg => {
+  return args.map((arg) => {
     if (arg.match(USERS_PATTERN)) return getUsernameFromID(arg, message);
     if (arg.match(ROLES_PATTERN)) return getRoleNameFromID(arg, message);
     if (arg.match(CHANNELS_PATTERN)) return getChannelNameFromID(arg, message);
     return arg;
-  })
+  });
 }
 
 function getUsernameFromID(id: string, message: Message): string {
   const mentions = message.mentions;
   const snowflake = id.match(/\d+/g)?.[0];
   if (!snowflake) return id;
-  const foundMember = mentions.members?.get(snowflake)
+  const foundMember = mentions.members?.get(snowflake);
   if (foundMember) return '@' + (foundMember.nickname || foundMember.user.username);
   const foundUser = mentions.users.get(snowflake);
   if (foundUser) return '@' + foundUser.username;
@@ -82,16 +82,16 @@ function getRoleNameFromID(id: string, message: Message): string {
   const snowflake = id.match(/\d+/g)?.[0];
   if (!snowflake) return id;
   const foundRole = mentions.roles.get(snowflake);
-  if(foundRole) return '@' + foundRole.name;
+  if (foundRole) return '@' + foundRole.name;
   return id;
 }
 
 function getChannelNameFromID(id: string, message: Message): string {
   const snowflake = id.match(/\d+/g)?.[0];
-  if(!snowflake) return id;
+  if (!snowflake) return id;
   const foundChannel = message.client.channels.cache.get(snowflake);
-  if(!foundChannel) return id;
-  if((<any>foundChannel).name) return '#' + (<any>foundChannel).name;
+  if (!foundChannel) return id;
+  if ((<any>foundChannel).name) return '#' + (<any>foundChannel).name;
   return id;
 }
 

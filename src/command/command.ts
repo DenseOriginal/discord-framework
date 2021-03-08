@@ -53,7 +53,7 @@ export function Command(opt: CommandOptions) {
 
     validateArguments(opt.arguments, target.name);
     const argumentsAsClass = opt.arguments?.map((arg) => new Argument(arg, target.name));
-    if(!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
+    if (!opt.description) InternalLogger.warn(`${target.name} Should have a description`);
 
     class newTarget extends target implements CommandInterface {
       name = opt.name;
@@ -88,7 +88,6 @@ export function Command(opt: CommandOptions) {
           InternalLogger.error(`Uncaught error thrown inside ${target.name}.action`);
           InternalLogger.error(error);
         }
-
       }
 
       async canRun(messageToCheckAgainst: Message): Promise<FriendlyError | void> {

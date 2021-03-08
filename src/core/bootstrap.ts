@@ -30,7 +30,7 @@ export interface BootstrapOptions {
   /**
    * @description
    * Disable all internal logging to the console
-   * 
+   *
    * @default false
    */
   disableLogging?: boolean;
@@ -39,7 +39,7 @@ export interface BootstrapOptions {
    * @description
    * Allow bots to issue commands
    * If this is true your bot will react to other bots
-   * 
+   *
    * @default false
    */
   allowBots?: boolean;
@@ -49,8 +49,8 @@ type constructor<T = any> = new (...args: any[]) => T;
 
 export function bootstrap(mainHandler: constructor, options: BootstrapOptions, client = new Client()): Client {
   // Resume logging if necessary
-  if(!options.disableLogging) InternalLogger.resume();
-  
+  if (!options.disableLogging) InternalLogger.resume();
+
   try {
     let prefix = options.prefix;
     let cleanPrefix: string;
@@ -65,7 +65,7 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
 
       // Return if the command was issued by a bot
       // And options is set to not respond to bots
-      if(message.author.bot && !options.allowBots) return;
+      if (message.author.bot && !options.allowBots) return;
       if (!message.content.startsWith(prefix)) {
         // If message doesn't start with prefix
         // AND usePingAsPrefix is true try again with the bot tag as prefix

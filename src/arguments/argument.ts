@@ -25,9 +25,11 @@ export class Argument {
     if (opt.type) {
       setTimeout(() => {
         const foundType = TypeRegistry.find(<string>opt.type);
-        if (!foundType) { InternalLogger.crit(`Cannot find argument type "${opt.type}" for argument "${opt.key}" on ${parentName}`); }
+        if (!foundType) {
+          InternalLogger.crit(`Cannot find argument type "${opt.type}" for argument "${opt.key}" on ${parentName}`);
+        }
         this.type = foundType;
-      })
+      });
     }
 
     Argument.validateOptions(opt);
@@ -57,13 +59,15 @@ export class Argument {
         (v) => v instanceof FriendlyError,
       ) as FriendlyError[];
       if (friendlyErrors.length == 0) return;
-  
+
       // If there was any failed validate functions
       // Map them to one string, and return that as a friendlyError
       return new FriendlyError(friendlyErrors.map((e) => e.message).join('\n'));
     } catch (error) {
       InternalLogger.error(error);
-      return error instanceof FriendlyError ? error : new FriendlyError('Something happened trying to validate this message');
+      return error instanceof FriendlyError
+        ? error
+        : new FriendlyError('Something happened trying to validate this message');
     }
   }
 
@@ -72,7 +76,9 @@ export class Argument {
       return this.type?.parse(val, message) || this.parser?.(val, message) || Promise.resolve(val);
     } catch (error) {
       InternalLogger.error(error);
-      return error instanceof FriendlyError ? error : new FriendlyError('Something happened trying to read this message');
+      return error instanceof FriendlyError
+        ? error
+        : new FriendlyError('Something happened trying to read this message');
     }
   }
 
