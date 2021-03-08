@@ -84,7 +84,8 @@ export class Argument {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async isEmpty(val: any, message: Message): Promise<boolean> {
-    return !isNaN(val) || !val;
+    if(!isNaN(val)) return false;
+    return !val;
   }
 
   static validateOptions(opt: ArgumentOptions): void {
