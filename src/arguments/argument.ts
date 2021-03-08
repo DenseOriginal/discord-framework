@@ -84,7 +84,7 @@ export class Argument {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async isEmpty(val: any, message: Message): Promise<boolean> {
-    if(!isNaN(val)) return false;
+    if (!isNaN(val)) return false;
     return !val;
   }
 
