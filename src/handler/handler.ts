@@ -56,7 +56,7 @@ export interface HandlerOptions {
    * If this is true the handler will not send any response back to the user if the handler
    * can't find any sub commands or sub handlers
    */
-  silentOnNoCommand?: boolean;
+  silentOnUnknownCommand?: boolean;
 }
 
 export function Handler(opt: HandlerOptions) {
@@ -76,7 +76,11 @@ export function Handler(opt: HandlerOptions) {
 
         if (!commandOrHandler) {
           // Couldn't find any command or handler
-          // Should log something to the user
+          if(!opt.silentOnUnknownCommand) {
+            const errorEmbed = createErrorEmbed(new FriendlyError(`Cannot find command "${commandName}"`));
+            if(!errorEmbed) return;
+            message.channel.send(errorEmbed);
+          }
           return;
         }
 
