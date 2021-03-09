@@ -1,8 +1,21 @@
-import { singleton } from 'tsyringe';
+import { injectable, singleton } from 'tsyringe';
 
 /**
  * @description
- * Proxy for tsyringe singleton
- * This insures that a service class is only instantiated oncy
+ * Decorator for any service
+ * Allows the service to use dependency injection
+ * And makes the service a singleton
  */
-export const Service = singleton;
+export function Service() {
+    return function <T extends new (...args: any[]) => any>(target: T): T {
+        // Make the service a singleton
+        const singletonDecorator = singleton();
+        singletonDecorator(target);
+
+        // Activate dependency injection
+        const injectableDecorator = injectable();
+        injectableDecorator(target);
+
+        return target;
+    }
+}
