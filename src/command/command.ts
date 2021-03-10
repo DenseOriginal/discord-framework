@@ -66,7 +66,7 @@ export function Command(opt: CommandOptions) {
 
         // Parse and validate the arguments
         const parsedArguments: any = await this.parseAndValidateArguments(messageReader);
-        if (parsedArguments instanceof FriendlyError) return;
+        if ((parsedArguments as Error).name == "FriendlyError") return;
 
         // Create the action context
         const context: ActionContext = {
@@ -100,7 +100,7 @@ export function Command(opt: CommandOptions) {
 
           // Remove all results that aren't an error
           const filteredResults: FriendlyError[] = canRunResults.filter(
-            (result) => result instanceof FriendlyError,
+            (result) => (result as FriendlyError)?.name == "FriendlyError",
           ) as FriendlyError[];
           if (filteredResults.length == 0) return;
 
@@ -114,7 +114,7 @@ export function Command(opt: CommandOptions) {
           // If any canRun function fails
           // and its a friendlyError return it
           // So it can be sent back to the user
-          if (error instanceof FriendlyError) return error;
+          if ((error as FriendlyError)?.name == "FriendlyError") return error;
 
           // If the error isn't a friendlyError return an empty one
           // This makes sure that the handler fails the command
@@ -129,10 +129,16 @@ export function Command(opt: CommandOptions) {
         let errorHappened: FriendlyError | undefined;
 
         for await (const argument of this.arguments) {
-          const { key } = argument;
+          const { key, rest } = argument;
 
           // Get the arguments that needs to be parsed
-          const inputArg = reader.getNext();
+          // Is this a rest argument get the rest of the argument
+          // Otherwise just get the nest
+          const inputArg = rest ? reader.rest() : reader.getNext();
+
+          // If its a rest argument we have to increment the internal index of the reader
+          // Otherwise argument errors show the wrong argument
+          if(rest) reader.getNext();
           if (await argument.isEmpty(inputArg, message)) {
             if (argument.optional) break;
             errorHappened = new FriendlyError(`Missing input ${argument.key}`);
@@ -144,11 +150,11 @@ export function Command(opt: CommandOptions) {
           // Parse and validate the argument
           const parsedArgument = await argument.execute(inputArg, message);
 
-          if (parsedArgument instanceof FriendlyError) {
+          if ((parsedArgument as FriendlyError)?.name == "FriendlyError") {
             // If the parsedArgument is a friendlyError
             // break out of the loop
             errorHappened = parsedArgument;
-            const errorEmbed = reader.createArgumentErrorEmbed(reader.index - 1, errorHappened);
+            const errorEmbed = reader.createArgumentErrorEmbed(reader.index - 1, errorHappened as FriendlyError);
             if (errorEmbed) message.channel.send(errorEmbed);
             break;
           }

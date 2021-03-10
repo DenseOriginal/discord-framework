@@ -36,19 +36,35 @@ export class Argument {
   }
 
   async execute(val: any, message: Message): Promise<FriendlyError | any> {
-    // Parse the incoming value
-    // If it's a friendlyError return it
-    const parsed = await this.parse(val, message);
-    if (parsed instanceof FriendlyError) return parsed;
+    // Make the input an array wether or not it is an array
+    // This makes it easier to parse rest and non-rest arguments
+    // As the system for parsing it will be the same
+    // Then we can split it up in the end
+    const inputs = Array.isArray(val) ? val : [val];
+    const outputs: any[] = [];
 
-    // Validate the parsed value
-    // If it's a friendlyError return it
-    const validated = await this.validate(parsed, message);
-    if (validated instanceof FriendlyError) return validated;
+    for (const input of inputs) {
+      // Parse the incoming value
+      // If it's a friendlyError return it
+      const parsed = await this.parse(input, message);
+      if ((parsed as FriendlyError)?.name == "FriendlyError") return parsed;
+
+      // Validate the parsed value
+      // If it's a friendlyError return it
+      const validated = await this.validate(parsed, message);
+      if ((validated as FriendlyError)?.name == "FriendlyError") return validated;
+
+      // Push the parsed value to the output array
+      // So that is can be returned later
+      outputs.push(parsed);
+    }
 
     // If we don't have any errors
-    // Return the parsed and validated value
-    return parsed;
+    // Return the parsed and validated value(s)
+    // Is this is a rest argument return the parsed values as an array
+    // If not return the first value of the outputs array
+    // We can assume that is this isn't a rest argument that output array only has one value
+    return this.rest ? outputs : outputs[0];
   }
 
   async validate(val: any, message: Message): Promise<FriendlyError | void> {
@@ -56,7 +72,7 @@ export class Argument {
       const validatorsAsPromise = this.validators.map((f) => f(val, message));
       const validatorReturns = await Promise.all(validatorsAsPromise);
       const friendlyErrors: FriendlyError[] = validatorReturns.filter(
-        (v) => v instanceof FriendlyError,
+        (v) => (v as FriendlyError)?.name == "FriendlyError",
       ) as FriendlyError[];
       if (friendlyErrors.length == 0) return;
 
@@ -65,7 +81,7 @@ export class Argument {
       return new FriendlyError(friendlyErrors.map((e) => e.message).join('\n'));
     } catch (error) {
       InternalLogger.error(error);
-      return error instanceof FriendlyError
+      return (error as FriendlyError)?.name == "FriendlyError"
         ? error
         : new FriendlyError('Something happened trying to validate this message');
     }
@@ -76,7 +92,7 @@ export class Argument {
       return this.type?.parse(val, message) || this.parser?.(val, message) || Promise.resolve(val);
     } catch (error) {
       InternalLogger.error(error);
-      return error instanceof FriendlyError
+      return (error as FriendlyError)?.name == "FriendlyError"
         ? error
         : new FriendlyError('Something happened trying to read this message');
     }
@@ -84,6 +100,7 @@ export class Argument {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async isEmpty(val: any, message: Message): Promise<boolean> {
+    if (Array.isArray(val) && val.length == 0) return true;
     if (!isNaN(val)) return false;
     return !val;
   }
