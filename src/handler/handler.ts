@@ -121,7 +121,7 @@ export function Handler(opt: HandlerOptions) {
 
       async evaluateCanRun(handler: HandlerInterface | CommandInterface, message: Message): Promise<FriendlyError | void> {
         const canRun = await handler.canRun(message);
-        if ((canRun as FriendlyError)?.name == 'FriendlyError' && (canRun as FriendlyError)?.message) {
+        if ((canRun as FriendlyError)?.name == 'FriendlyError') {
           const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
           if (canRunReturnErrorEmbed) message.channel.send(canRunReturnErrorEmbed);
           return canRun;
