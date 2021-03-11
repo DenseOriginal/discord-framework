@@ -52,15 +52,16 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
   if (!options.disableLogging) InternalLogger.resume();
 
   try {
-    let prefix = options.prefix;
-    let cleanPrefix: string;
     const main: HandlerInterface = initHandler(mainHandler);
-
+    
     // Define the client on global
     // So that you can use the client in a class
     Reflect.defineMetadata('discord:client', client, global);
-
+    
     client.on('message', (message) => {
+      let prefix = options.prefix;
+      let cleanPrefix = prefix;
+
       if (!shouldHandleMessage(message)) return;
 
       // Return if the command was issued by a bot
