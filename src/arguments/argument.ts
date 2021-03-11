@@ -108,7 +108,7 @@ export class Argument {
   }
 
   static validateOptions(opt: ArgumentOptions, parentName: string): void {
-    if (!opt.parser && !opt.type) throw new Error('Argument needs to have either a parser function or a type');
+    if (!opt.parser && !opt.type) InternalLogger.crit(`Argument "${opt.key}" on ${parentName} needs to have either a parser function or a type`);
     if (opt.joinRest && opt.rest) InternalLogger.crit(`Argument "${opt.key}" on ${parentName} cannot have both 'rest' and 'joinRest' set to true`);
   }
 }
