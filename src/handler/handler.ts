@@ -84,21 +84,22 @@ export function Handler(opt: HandlerOptions) {
           return;
         }
 
-        // Check if user has permission to run the command or handler
-        // If return is a friendlyError with a message, reply to user with an error
-        // And then return
-        const canRun = await commandOrHandler.canRun(message);
-        if ((canRun as FriendlyError)?.name == 'FriendlyError' && (canRun as FriendlyError)?.message) {
-          const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
-          if (canRunReturnErrorEmbed) message.channel.send(canRunReturnErrorEmbed);
-          return;
-        }
+        // Check the message against this handlers own canRun function
+        // if it's an error return
+        if((await this.evaluateCanRun(this, message) as FriendlyError)?.name == 'FriendlyError') return;
 
         // Run the command or handler
         try {
           //// Warning! very stroke inducing code ahead :)
           // If its a command call execute
           if ((<any>commandOrHandler).execute) {
+            // If its a command
+            // Check if user has permission to run the command
+            // If return is a friendlyError with a message, reply to user with an error
+            // And then return
+            // Handlers validate themself so don't check them
+            if((await this.evaluateCanRun(commandOrHandler, message) as FriendlyError)?.name == 'FriendlyError') return;
+
             (<CommandInterface>commandOrHandler).execute(messageReader);
           }
           // Else if its a handler call run
@@ -115,6 +116,15 @@ export function Handler(opt: HandlerOptions) {
           const errorEmbed = createErrorEmbed(error);
           if (!errorEmbed) return;
           message.channel.send(errorEmbed);
+        }
+      }
+
+      async evaluateCanRun(handler: HandlerInterface | CommandInterface, message: Message): Promise<FriendlyError | void> {
+        const canRun = await handler.canRun(message);
+        if ((canRun as FriendlyError)?.name == 'FriendlyError' && (canRun as FriendlyError)?.message) {
+          const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
+          if (canRunReturnErrorEmbed) message.channel.send(canRunReturnErrorEmbed);
+          return canRun;
         }
       }
 
