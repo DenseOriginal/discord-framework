@@ -3,6 +3,7 @@ import { Client, Message } from 'discord.js';
 import { HandlerInterface } from '../handler/interfaces';
 import { initHandler } from '../utils/helpers';
 import { MessageReader } from '../utils/reader';
+import { createErrorEmbed, FriendlyError } from '../errors';
 
 export interface BootstrapOptions {
   /**
@@ -60,7 +61,7 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
     // So that you can use the client in a class
     Reflect.defineMetadata('discord:client', client, global);
 
-    client.on('message', (message) => {
+    client.on('message', async (message) => {
       if (!shouldHandleMessage(message)) return;
 
       // Return if the command was issued by a bot
@@ -90,6 +91,17 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
       // Create a messageReader for the message
       // And run it
       const reader = new MessageReader(message, prefix, cleanPrefix);
+
+      // Check if user has permission to run the command or handler
+      // If return is a friendlyError with a message, reply to user with an error
+      // And then return
+      const canRun = await main.canRun(message);
+      if ((canRun as FriendlyError)?.name == "FriendlyError" && (canRun as FriendlyError)?.message) {
+        const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
+        if (canRunReturnErrorEmbed) message.channel.send(canRunReturnErrorEmbed);
+        return;
+      }
+
       main.run(reader);
     });
 
