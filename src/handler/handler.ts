@@ -86,7 +86,7 @@ export function Handler(opt: HandlerOptions) {
 
         // Check the message against this handlers own canRun function
         // if it's an error return
-        if((await this.evaluateCanRun(this, message) as FriendlyError)?.name == 'FriendlyError') return;
+        if (((await this.evaluateCanRun(this, message)) as FriendlyError)?.name == 'FriendlyError') return;
 
         // Run the command or handler
         try {
@@ -98,7 +98,8 @@ export function Handler(opt: HandlerOptions) {
             // If return is a friendlyError with a message, reply to user with an error
             // And then return
             // Handlers validate themself so don't check them
-            if((await this.evaluateCanRun(commandOrHandler, message) as FriendlyError)?.name == 'FriendlyError') return;
+            if (((await this.evaluateCanRun(commandOrHandler, message)) as FriendlyError)?.name == 'FriendlyError')
+              return;
 
             (<CommandInterface>commandOrHandler).execute(messageReader);
           }
@@ -119,7 +120,10 @@ export function Handler(opt: HandlerOptions) {
         }
       }
 
-      async evaluateCanRun(handler: HandlerInterface | CommandInterface, message: Message): Promise<FriendlyError | void> {
+      async evaluateCanRun(
+        handler: HandlerInterface | CommandInterface,
+        message: Message,
+      ): Promise<FriendlyError | void> {
         const canRun = await handler.canRun(message);
         if ((canRun as FriendlyError)?.name == 'FriendlyError') {
           const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
