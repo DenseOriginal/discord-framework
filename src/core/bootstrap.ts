@@ -96,7 +96,7 @@ export function bootstrap(mainHandler: constructor, options: BootstrapOptions, c
       // If return is a friendlyError with a message, reply to user with an error
       // And then return
       const canRun = await main.canRun(message);
-      if ((canRun as FriendlyError)?.name == "FriendlyError" && (canRun as FriendlyError)?.message) {
+      if ((canRun as FriendlyError)?.name == 'FriendlyError' && (canRun as FriendlyError)?.message) {
         const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
         if (canRunReturnErrorEmbed) message.channel.send(canRunReturnErrorEmbed);
         return;

@@ -76,9 +76,9 @@ export function Handler(opt: HandlerOptions) {
 
         if (!commandOrHandler) {
           // Couldn't find any command or handler
-          if(!opt.silentOnUnknownCommand) {
+          if (!opt.silentOnUnknownCommand) {
             const errorEmbed = createErrorEmbed(new FriendlyError(`Cannot find command "${commandName}"`));
-            if(!errorEmbed) return;
+            if (!errorEmbed) return;
             message.channel.send(errorEmbed);
           }
           return;
@@ -88,7 +88,7 @@ export function Handler(opt: HandlerOptions) {
         // If return is a friendlyError with a message, reply to user with an error
         // And then return
         const canRun = await commandOrHandler.canRun(message);
-        if ((canRun as FriendlyError)?.name == "FriendlyError" && (canRun as FriendlyError)?.message) {
+        if ((canRun as FriendlyError)?.name == 'FriendlyError' && (canRun as FriendlyError)?.message) {
           const canRunReturnErrorEmbed = createErrorEmbed(canRun as FriendlyError, message.cleanContent);
           if (canRunReturnErrorEmbed) message.channel.send(canRunReturnErrorEmbed);
           return;
@@ -110,7 +110,8 @@ export function Handler(opt: HandlerOptions) {
 
           // If the thrown error is a friendlyError send it back to the user
           // If not say we don't know what
-          const error = (_err as FriendlyError)?.name == "FriendlyError" ? _err : new FriendlyError("We don't know what");
+          const error =
+            (_err as FriendlyError)?.name == 'FriendlyError' ? _err : new FriendlyError("We don't know what");
           const errorEmbed = createErrorEmbed(error);
           if (!errorEmbed) return;
           message.channel.send(errorEmbed);
@@ -127,7 +128,7 @@ export function Handler(opt: HandlerOptions) {
 
           // Remove all results that aren't an error
           const filteredResults: FriendlyError[] = canRunResults.filter(
-            (result) => (result as FriendlyError)?.name == "FriendlyError",
+            (result) => (result as FriendlyError)?.name == 'FriendlyError',
           ) as FriendlyError[];
           if (filteredResults.length == 0) return;
 
@@ -141,7 +142,7 @@ export function Handler(opt: HandlerOptions) {
           // If any canRun function fails
           // and its a friendlyError return it
           // So it can be sent back to the user
-          if ((error as FriendlyError)?.name == "FriendlyError") return error;
+          if ((error as FriendlyError)?.name == 'FriendlyError') return error;
 
           // If the error isn't a friendlyError return an empty one
           // This makes sure that the handler fails the command

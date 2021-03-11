@@ -49,12 +49,12 @@ export class Argument {
       // Parse the incoming value
       // If it's a friendlyError return it
       const parsed = await this.parse(input, message);
-      if ((parsed as FriendlyError)?.name == "FriendlyError") return parsed;
+      if ((parsed as FriendlyError)?.name == 'FriendlyError') return parsed;
 
       // Validate the parsed value
       // If it's a friendlyError return it
       const validated = await this.validate(parsed, message);
-      if ((validated as FriendlyError)?.name == "FriendlyError") return validated;
+      if ((validated as FriendlyError)?.name == 'FriendlyError') return validated;
 
       // Push the parsed value to the output array
       // So that is can be returned later
@@ -74,7 +74,7 @@ export class Argument {
       const validatorsAsPromise = this.validators.map((f) => f(val, message));
       const validatorReturns = await Promise.all(validatorsAsPromise);
       const friendlyErrors: FriendlyError[] = validatorReturns.filter(
-        (v) => (v as FriendlyError)?.name == "FriendlyError",
+        (v) => (v as FriendlyError)?.name == 'FriendlyError',
       ) as FriendlyError[];
       if (friendlyErrors.length == 0) return;
 
@@ -83,7 +83,7 @@ export class Argument {
       return new FriendlyError(friendlyErrors.map((e) => e.message).join('\n'));
     } catch (error) {
       InternalLogger.error(error);
-      return (error as FriendlyError)?.name == "FriendlyError"
+      return (error as FriendlyError)?.name == 'FriendlyError'
         ? error
         : new FriendlyError('Something happened trying to validate this message');
     }
@@ -94,7 +94,7 @@ export class Argument {
       return this.type?.parse(val, message) || this.parser?.(val, message) || Promise.resolve(val);
     } catch (error) {
       InternalLogger.error(error);
-      return (error as FriendlyError)?.name == "FriendlyError"
+      return (error as FriendlyError)?.name == 'FriendlyError'
         ? error
         : new FriendlyError('Something happened trying to read this message');
     }
@@ -108,7 +108,9 @@ export class Argument {
   }
 
   static validateOptions(opt: ArgumentOptions, parentName: string): void {
-    if (!opt.parser && !opt.type) InternalLogger.crit(`Argument "${opt.key}" on ${parentName} needs to have either a parser function or a type`);
-    if (opt.joinRest && opt.rest) InternalLogger.crit(`Argument "${opt.key}" on ${parentName} cannot have both 'rest' and 'joinRest' set to true`);
+    if (!opt.parser && !opt.type)
+      InternalLogger.crit(`Argument "${opt.key}" on ${parentName} needs to have either a parser function or a type`);
+    if (opt.joinRest && opt.rest)
+      InternalLogger.crit(`Argument "${opt.key}" on ${parentName} cannot have both 'rest' and 'joinRest' set to true`);
   }
 }

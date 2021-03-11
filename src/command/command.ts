@@ -66,7 +66,7 @@ export function Command(opt: CommandOptions) {
 
         // Parse and validate the arguments
         const parsedArguments: any = await this.parseAndValidateArguments(messageReader);
-        if ((parsedArguments as Error).name == "FriendlyError") return;
+        if ((parsedArguments as Error).name == 'FriendlyError') return;
 
         // Create the action context
         const context: ActionContext = {
@@ -100,7 +100,7 @@ export function Command(opt: CommandOptions) {
 
           // Remove all results that aren't an error
           const filteredResults: FriendlyError[] = canRunResults.filter(
-            (result) => (result as FriendlyError)?.name == "FriendlyError",
+            (result) => (result as FriendlyError)?.name == 'FriendlyError',
           ) as FriendlyError[];
           if (filteredResults.length == 0) return;
 
@@ -114,7 +114,7 @@ export function Command(opt: CommandOptions) {
           // If any canRun function fails
           // and its a friendlyError return it
           // So it can be sent back to the user
-          if ((error as FriendlyError)?.name == "FriendlyError") return error;
+          if ((error as FriendlyError)?.name == 'FriendlyError') return error;
 
           // If the error isn't a friendlyError return an empty one
           // This makes sure that the handler fails the command
@@ -133,7 +133,7 @@ export function Command(opt: CommandOptions) {
 
           // If this is a joinRest argument
           // Tell the reader to join the rest of the argument
-          if(joinRest) reader.joinRest();
+          if (joinRest) reader.joinRest();
 
           // Get the arguments that needs to be parsed
           // Is this a rest argument get the rest of the argument
@@ -142,7 +142,7 @@ export function Command(opt: CommandOptions) {
 
           // If its a rest argument we have to increment the internal index of the reader
           // Otherwise argument errors show the wrong argument
-          if(rest) reader.getNext();
+          if (rest) reader.getNext();
 
           // If its a rest argument and its a joinRest argument
           // Join the inputArg array
@@ -158,7 +158,7 @@ export function Command(opt: CommandOptions) {
           // Parse and validate the argument
           const parsedArgument = await argument.execute(inputArg, message);
 
-          if ((parsedArgument as FriendlyError)?.name == "FriendlyError") {
+          if ((parsedArgument as FriendlyError)?.name == 'FriendlyError') {
             // If the parsedArgument is a friendlyError
             // break out of the loop
             errorHappened = parsedArgument;

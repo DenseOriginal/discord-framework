@@ -7,15 +7,15 @@ import { injectable, singleton } from 'tsyringe';
  * And makes the service a singleton
  */
 export function Service() {
-    return function <T extends new (...args: any[]) => any>(target: T): T {
-        // Make the service a singleton
-        const singletonDecorator = singleton();
-        singletonDecorator(target);
+  return function <T extends new (...args: any[]) => any>(target: T): T {
+    // Make the service a singleton
+    const singletonDecorator = singleton();
+    singletonDecorator(target);
 
-        // Activate dependency injection
-        const injectableDecorator = injectable();
-        injectableDecorator(target);
+    // Activate dependency injection
+    const injectableDecorator = injectable();
+    injectableDecorator(target);
 
-        return target;
-    }
+    return target;
+  };
 }
