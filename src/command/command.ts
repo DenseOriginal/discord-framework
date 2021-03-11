@@ -129,7 +129,11 @@ export function Command(opt: CommandOptions) {
         let errorHappened: FriendlyError | undefined;
 
         for await (const argument of this.arguments) {
-          const { key, rest } = argument;
+          const { key, rest, joinRest } = argument;
+
+          // If this is a joinRest argument
+          // Tell the reader to join the rest of the argument
+          if(joinRest) reader.joinRest();
 
           // Get the arguments that needs to be parsed
           // Is this a rest argument get the rest of the argument
@@ -139,6 +143,10 @@ export function Command(opt: CommandOptions) {
           // If its a rest argument we have to increment the internal index of the reader
           // Otherwise argument errors show the wrong argument
           if(rest) reader.getNext();
+
+          // If its a rest argument and its a joinRest argument
+          // Join the inputArg array
+          // if(rest && joinRest) inputArg = (inputArg as string[])?.join(' ');
           if (await argument.isEmpty(inputArg, message)) {
             if (argument.optional) break;
             errorHappened = new FriendlyError(`Missing input ${argument.key}`);

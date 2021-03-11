@@ -41,6 +41,11 @@ export class MessageReader {
     return this.args.slice(this._index);
   }
 
+  joinRest(): void {
+    this.args = [...this.args.slice(0, this._index), this.rest().join(' ')];
+    this.cleanArgs = [...this.cleanArgs.slice(0, this._index), this.cleanArgs.slice(this._index).join(' ')];
+  }
+
   createArgumentErrorEmbed(idx: number, error: FriendlyError): MessageEmbed | undefined {
     const truncatedArgs = this.cleanArgs.map(truncate(25));
     const arrowOffset = truncatedArgs.slice(0, idx).join(' ').length + (this.cleanPrefix || this.prefix).length + 1;

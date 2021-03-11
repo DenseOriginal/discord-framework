@@ -12,6 +12,7 @@ export class Argument {
   type?: BaseArgumentType;
   optional: boolean;
   rest: boolean;
+  joinRest: boolean;
   validators: Validator[];
   private parser?: Parser;
 
@@ -20,6 +21,7 @@ export class Argument {
     this.description = opt.description || '';
     this.optional = !!opt.optional;
     this.rest = !!opt.rest;
+    this.joinRest = !!opt.joinRest;
     this.validators = opt.validators || [];
     this.parser = opt.parser;
     if (opt.type) {
@@ -32,7 +34,7 @@ export class Argument {
       });
     }
 
-    Argument.validateOptions(opt);
+    Argument.validateOptions(opt, parentName);
   }
 
   async execute(val: any, message: Message): Promise<FriendlyError | any> {
@@ -105,7 +107,8 @@ export class Argument {
     return !val;
   }
 
-  static validateOptions(opt: ArgumentOptions): void {
+  static validateOptions(opt: ArgumentOptions, parentName: string): void {
     if (!opt.parser && !opt.type) throw new Error('Argument needs to have either a parser function or a type');
+    if (opt.joinRest && opt.rest) InternalLogger.crit(`Argument "${opt.key}" on ${parentName} cannot have both 'rest' and 'joinRest' set to true`);
   }
 }
