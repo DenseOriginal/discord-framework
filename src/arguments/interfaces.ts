@@ -8,6 +8,7 @@ export interface ArgumentOptions {
   optional?: boolean;
   rest?: boolean;
   joinRest?: boolean;
+  emptyMessage?: string;
   parser?: Parser<any>;
   validators?: Validator[];
 }

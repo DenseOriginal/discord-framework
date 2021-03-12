@@ -149,7 +149,7 @@ export function Command(opt: CommandOptions) {
           // if(rest && joinRest) inputArg = (inputArg as string[])?.join(' ');
           if (await argument.isEmpty(inputArg, message)) {
             if (argument.optional) break;
-            errorHappened = new FriendlyError(`Missing input ${argument.key}`);
+            errorHappened = new FriendlyError(argument.emptyMessage);
             const errorEmbed = reader.createArgumentErrorEmbed(reader.index - 1, errorHappened);
             if (errorEmbed) message.channel.send(errorEmbed);
             break;

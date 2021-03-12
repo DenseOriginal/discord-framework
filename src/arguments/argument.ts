@@ -13,6 +13,7 @@ export class Argument {
   optional: boolean;
   rest: boolean;
   joinRest: boolean;
+  emptyMessage: string;
   validators: Validator[];
   private parser?: Parser;
 
@@ -23,6 +24,7 @@ export class Argument {
     this.rest = !!opt.rest;
     this.joinRest = !!opt.joinRest;
     this.validators = opt.validators || [];
+    this.emptyMessage = opt.emptyMessage || `Missing input ${this.key}`;
     this.parser = opt.parser;
     if (opt.type) {
       setTimeout(() => {
